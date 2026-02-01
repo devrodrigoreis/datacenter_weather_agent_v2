@@ -1,45 +1,64 @@
 # Data Center Weather Agent
 
-A LangGraph agent system that determines the weather forecast at a data center location using the Model Context Protocol (MCP).
+A production-grade multi-agent LangGraph system that provides secure, intelligent weather forecasting for data center locations using the Model Context Protocol (MCP).
 
-**Architecture**: Custom StateGraph with explicit state management, modular nodes, and conditional routing following LangGraph 2026 best practices.
+**Architecture**: LangGraph Multi-Agent Supervisor Pattern with specialized agents for security, intent classification, location discovery, weather retrieval, output validation, and adaptive learning.
 
 ## Overview
 
-This system answers the question: *"What is the weather forecast of the data center?"*
+This system securely answers: *"What is the weather forecast of the data center?"*
 
-It autonomously:
-0. Check the Intent Classification avoind answering questions that it is not supposed too answer or giving the same answer for any question
-1. Discovers the data center's public IP address
-2. Resolves the IP to geographic coordinates
-3. Fetches the current weather forecast for that location
-4. Synthesizes a natural language response
+It features a multi-layered security and processing pipeline:
 
-### Why This Architecture?
+1. **Security Agent**: Analyzes queries for malicious intent, prompt injection, and security threats
+2. **Intent Agent**: Validates queries are weather/location related, rejects off-topic requests
+3. **IP Agent**: Discovers data center's public IP address and geographic coordinates
+4. **Weather Agent**: Retrieves current weather forecast data
+5. **Safety Agent**: Validates output doesn't leak sensitive system information
+6. **Learning Agent**: Analyzes security violations and adapts threat detection
+7. **Supervisor Agent**: Orchestrates workflow and makes routing decisions
 
-This implementation uses LangGraph's **custom StateGraph** approach rather than prebuilt agents because:
+### Why LangGraph Multi-Agent Supervisor Architecture?
 
-- **Full Transparency**: Every decision point is explicit and debuggable
-- **Production-Ready**: Modular design supports testing, monitoring, and extension
-- **Best Practices**: Follows LangGraph 2026 recommendations for stateful agents acquired in the Langgraph documentation: https://docs.langchain.com/oss/python/langgraph/workflows-agents
-- **Maintainable**: Clear separation of concerns with typed state schemas
+This implementation uses **LangGraph's supervisor pattern** with specialized agents:
+
+- **Security First**: Multi-layer threat detection with adaptive learning from violations
+- **Separation of Concerns**: Each agent has a single, well-defined responsibility
+- **Production-Ready**: Enterprise-grade security logging and violation tracking
+- **Adaptive Learning**: System improves threat detection from historical attacks
+- **Best Practices**: Follows LangGraph 2026 multi-agent patterns
+- **Maintainable**: Clear agent boundaries with typed state management
 
 ## System Architecture
 
 ```
-┌─────────────────────────────────────────────────────────────────┐
-│                    Data Center Weather Agent                    │
-│                                                                 │
-│  ┌─────────────┐         ┌───────────────────────────────────┐  │
-│  │   Agent     │  HTTP   │         MCP Server                │  │
-│  │ (LangGraph) │◄───────►│  ┌────────┐ ┌─────────┐ ┌───────┐ │  │
-│  │             │   SSE   │  │ ipify  │ │ip_to_geo│ │weather│ │  |
-│  │  5 Nodes    │         │  └───┬────┘ └────┬────┘ └──┬────┘ │  │
-│  │  3 Edges    │         │      │           │         │      │  │
-│  │  9 State    │         │      ▼           ▼         ▼      │  │
-│  │  Fields     │         │    ipify.org  ip-api.com  meteo   │  │
-│  └─────────────┘         └───────────────────────────────────┘  │
-└─────────────────────────────────────────────────────────────────┘
+┌──────────────────────────────────────────────────────────────────────┐
+│              Data Center Weather Multi-Agent System                  │
+│                                                                      │
+│  ┌───────────────────────────────────────────────────────────┐      │
+│  │                  Supervisor Agent                          │      │
+│  │              (Orchestrates all agents)                     │      │
+│  └─────┬─────┬──────┬──────┬──────┬──────┬──────────────────┘      │
+│        │     │      │      │      │      │                          │
+│   ┌────▼──┐ ┌▼────┐┌▼───┐┌▼────┐┌▼────┐┌▼────────┐                │
+│   │Secur- │ │Int- ││IP  ││Wea- ││Safe-││Learning │                │
+│   │ ity   │ │ent  ││Agt ││ther ││ ty  ││  Agent  │                │
+│   │Agent  │ │Agt  ││    ││Agt  ││Agt  ││         │                │
+│   └───┬───┘ └──┬──┘└─┬──┘└──┬──┘└──┬──┘└────┬────┘                │
+│       │        │     │      │      │        │                      │
+│       │        │     │      │      │        │                      │
+│       │        │     ▼      ▼      │        ▼                      │
+│       │        │  ┌───────────────┐│   ┌──────────┐                │
+│       │        │  │  MCP Server   ││   │security_ │                │
+│       │        │  │ ┌──────────┐  ││   │logs/     │                │
+│       │        │  │ │ipify     │  ││   │ insights │                │
+│       │        │  │ │ip_to_geo │  ││   │ violations│               │
+│       │        │  │ │weather   │  ││   └──────────┘                │
+│       │        │  │ └──────────┘  ││                               │
+│       │        │  └───────────────┘│                               │
+│       └────────┴────────┴──────────┴────────────────────────────── │
+│         Threat Detection & Intent Classification Pipeline           │
+└──────────────────────────────────────────────────────────────────────┘
 ```
 
 ### Components
@@ -53,29 +72,61 @@ This implementation uses LangGraph's **custom StateGraph** approach rather than 
   - `weather_forecast`: Fetch weather data (Open-Meteo)
 - **Features**: Input validation, error handling, structured logging
 
-#### 2. LangGraph Agent (`agent/`)
-- **Technology**: Python, LangGraph, LangChain, Google Gemini
-- **Architecture**: Custom StateGraph
-- **State**: 9 typed fields tracking workflow progress
-- **Nodes**: 5 modular computation units
-- **Edges**: 3 conditional routing functions
-- **Features**: LLM fallback, detailed trace, error recovery
+#### 2. LangGraph Multi-Agent System (`agent/`)
+- **Technology**: Python, LangGraph (Supervisor Pattern), LangChain, Google Gemini
+- **Architecture**: LangGraph Supervisor Pattern with 7 Specialized Agents
+- **Agents**:
+  - **Security Agent**: Threat detection with adaptive learning
+  - **Intent Agent**: Query classification and scope enforcement
+  - **IP Agent**: Location discovery via MCP tools
+  - **Weather Agent**: Forecast retrieval and formatting
+  - **Safety Agent**: Output validation and sanitization
+  - **Learning Agent**: Pattern analysis and insights generation
+  - **Supervisor Agent**: Workflow orchestration and routing
+- **Features**: 
+  - LLM fallback (Gemini to LongCat)
+  - Real-time security logging
+  - Automatic insights updates
+  - Comprehensive violation tracking
+  - Adaptive threat detection
 
 ## State Management
 
-All data flows through a strongly typed `AgentState`:
+All data flows through a strongly typed `SharedState`:
 
 ```python
-class AgentState(TypedDict):
-    question: str              # User's input query
-    public_ip: str | None      # From ipify tool
-    latitude: float | None     # From ip_to_geo tool  
-    longitude: float | None    # From ip_to_geo tool
-    weather_data: str | None   # From weather_forecast tool
-    answer: str | None         # Final LLM response
-    messages: list             # Conversation history
-    error: str | None          # Error tracking
-    current_step: str          # Progress indicator
+class SharedState(TypedDict):
+    # User input
+    question: str
+    
+    # Security analysis
+    is_safe_query: bool | None
+    security_threat_type: str | None
+    
+    # Intent classification
+    is_weather_question: bool | None
+    
+    # IP and location data
+    public_ip: str | None
+    latitude: float | None
+    longitude: float | None
+    
+    # Weather data
+    weather_data: str | None
+    
+    # Final answer
+    answer: str | None
+    output_safe: bool | None
+    
+    # Routing and control
+    next_agent: str | None
+    current_agent: str | None
+    
+    # Error tracking
+    error: str | None
+    
+    # Messages for LLM context
+    messages: list[BaseMessage]
 ```
 
 ## Graph Structure
@@ -83,52 +134,122 @@ class AgentState(TypedDict):
 ```
 START
   ↓
-┌───────────────────────┐
-│  intent classification│ → [custom logic]
-└──────┬────────────────┘
-       ↓
-┌─────────────┐
-│  get_ip     │ → [ipify tool]
-└──────┬──────┘
-       │ [conditional: success/error]
-       ↓
-┌──────────────────┐
-│ resolve_location │ → [ip_to_geo tool]
-└──────┬───────────┘
-       │ [conditional: success/error]
-       ↓
-┌──────────────┐
-│fetch_weather │ → [weather_forecast tool]
-└──────┬───────┘
-       │ [conditional: success/error]
-       ↓
-┌────────────────┐
-│generate_answer │ → [LLM synthesis]
-└───────┬────────┘
-        ↓
-       END
-
-     [error] ← Any failure routes here
+┌─────────────────┐
+│ Security Agent  │ → Analyze for threats
+└────────┬────────┘
+         │ [returns to supervisor]
+         ↓
+┌─────────────────┐
+│ Supervisor      │ → Route based on security result
+└────────┬────────┘
+         │
+         ├───[THREAT]────────────────────────────┐
+         │                                       ↓
+         │                             ┌─────────────────┐
+         │                             │ Learning Agent  │
+         │                             └────────┬────────┘
+         │                                      ↓
+         │                                     END
+         │
+         └───[SAFE]────────────────────────────┐
+                                                ↓
+                                     ┌─────────────────┐
+                                     │  Intent Agent   │
+                                     └────────┬────────┘
+                                              ↓ [returns to supervisor]
+                                     ┌─────────────────┐
+                                     │ Supervisor      │
+                                     └────────┬────────┘
+                                              │
+                       ├───[OFF-TOPIC]────────────────────┐
+                       │                                   ↓
+                       │                                  END
+                       │
+                       └───[WEATHER RELATED]──────────────┐
+                                                           ↓
+                                                ┌─────────────────┐
+                                                │   IP Agent      │
+                                                └────────┬────────┘
+                                                         ↓
+                                                ┌─────────────────┐
+                                                │ Weather Agent   │
+                                                └────────┬────────┘
+                                                         ↓
+                                                ┌─────────────────┐
+                                                │ Supervisor      │
+                                                │ (Generate LLM   │
+                                                │   Response)     │
+                                                └────────┬────────┘
+                                                         ↓
+                                                ┌─────────────────┐
+                                                │  Safety Agent   │
+                                                └────────┬────────┘
+                                                         ↓
+                                                        END
 ```
 
-### Node Responsibilities
+### Agent Responsibilities
 
-1. **get_ip_node**: Calls ipify tool, updates state with public_ip
-2. **resolve_location_node**: Calls ip_to_geo, extracts lat/lon
-3. **fetch_weather_node**: Calls weather_forecast with coordinates
-4. **generate_answer_node**: LLM creates natural language response
-5. **error_node**: Centralized error handling and user messaging
+1. **Security Agent**: Analyzes input for malicious patterns, logs violations, updates insights
+2. **Intent Agent**: Classifies if query is weather/location related
+3. **IP Agent**: Discovers public IP and resolves to coordinates
+4. **Weather Agent**: Fetches weather forecast for location
+5. **Safety Agent**: Validates output doesn't leak system information
+6. **Learning Agent**: Analyzes violation patterns and generates insights
+7. **Supervisor Agent**: Orchestrates all routing and generates LLM responses
 
-### Conditional Routing
+### Security Features
 
-Each edge validates the previous operation before proceeding:
+**Threat Detection**:
+- Prompt extraction attempts
+- Credential extraction attempts
+- Role manipulation attempts
+- Security bypass attempts
+- Config inspection attempts
+
+**Adaptive Learning**:
+- Automatic violation logging (JSONL format)
+- Real-time insights generation (JSON)
+- Pattern analysis from historical attacks
+- Enhanced threat detection using learned patterns
+
+**Security Logs**:
+```
+security_logs/
+├── violations_YYYYMMDD.jsonl    # Daily violation log
+└── insights.json                 # Aggregated threat intelligence
+```
+
+### Supervisor Routing Logic
+
+The supervisor makes intelligent routing decisions:
 
 ```python
-def route_after_ip(state: AgentState) -> Literal["resolve_location", "error"]:
-    """Route to next node or error based on IP fetch result"""
-    if state.get("error") or not state.get("public_ip"):
-        return "error"
-    return "resolve_location"
+async def route(self, state: SharedState) -> SharedState:
+    # Security threat detected - refuse and learn
+    if state.get("is_safe_query") is False:
+        return route_to_learning_agent()
+    
+    # Query passed security - check intent
+    if state.get("is_weather_question") is None:
+        return route_to_intent_agent()
+    
+    # Off-topic query - refuse
+    if state.get("is_weather_question") is False:
+        return generate_refusal()
+    
+    # Normal workflow routing
+    if not state.get("public_ip"):
+        return route_to_ip_agent()
+    
+    if not state.get("weather_data"):
+        return route_to_weather_agent()
+    
+    if not state.get("answer"):
+        return generate_answer()
+    
+    # Validate output
+    return route_to_safety_agent()
 ```
 
 ## Setup
